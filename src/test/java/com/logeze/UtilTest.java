@@ -8,6 +8,6 @@ public class UtilTest {
 
     @Test
     void should_verify_test_setup() {
-        assertThat(true).isTrue();
+        assertThat(true).isFalse();
     }
 }

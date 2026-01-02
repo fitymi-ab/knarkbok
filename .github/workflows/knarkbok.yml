@@ -1,4 +1,4 @@
-name: Knarkbok
+name: Knarkbok CI/CD
 
 on:
   push:
@@ -6,17 +6,20 @@ on:
   pull_request:
     branches: [ "main" ]
   schedule:
-    - cron: '42 8 * * *'
+    - cron: '42 8 * * *'  # Optional scheduled build
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout code
       - name: Checkout source
         uses: actions/checkout@v4
-        timeout-minutes: 5
+        with:
+          fetch-depth: 0  # Needed for pushing branches
 
+      # Set up JDK
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -24,31 +27,34 @@ jobs:
           java-version: '25'
           cache: 'maven'
 
-      - name: Build with Maven (capture log on failure)
+      # Build with Maven, fail on errors, capture log
+      - name: Build with Maven
+        id: build
         run: |
           mkdir -p logs
+          # Run Maven, capture output to logs/build.log
           ./mvnw -B clean package 2>&1 | tee logs/build.log || exit 1
 
-      # Push to production branch if build succeeds
-      - name: Push to production branch
-        if: success()
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Fetch remote production branch
-          git fetch origin production:production || git checkout -b production
-          
-          # Merge main into production (fast-forward only)
-          git merge --ff-only origin/main
-          
-          # Push to production
-          git push origin production
-
-      # Upload build log on failure
+      # Upload build log if Maven failed
       - name: Upload build log on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: maven-build-log
           path: logs/build.log
+
+      # Push to production if build succeeded
+      - name: Push to production branch
+        if: success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Fetch remote production branch or create if it doesn't exist
+          git fetch origin production:production || git checkout -b production
+
+          # Merge main into production (fast-forward only)
+          git merge --ff-only origin/main
+
+          # Push to remote
+          git push origin production

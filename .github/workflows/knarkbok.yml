@@ -51,5 +51,5 @@ jobs:
         if: success() && contains(github.ref, 'main')
         run: |
           git checkout -b production
-          git rebase master
+          git rebase main
           git push --force --set-upstream origin production

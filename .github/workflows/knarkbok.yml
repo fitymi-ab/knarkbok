@@ -35,10 +35,14 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git checkout production || git checkout -b production
+          
+          # Fetch remote production branch
+          git fetch origin production:production || git checkout -b production
+          
+          # Merge main into production (fast-forward only)
           git merge --ff-only origin/main
-
+          
+          # Push to production
           git push origin production
 
       # Upload build log on failure

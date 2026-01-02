@@ -24,11 +24,10 @@ jobs:
           java-version: '25'
           cache: 'maven'
 
-      - name: Build with Maven
+      - name: Build with Maven (capture log on failure)
         run: |
-          set -o pipefail
-          ./mvnw -B clean package 2>&1 | tee build.log
-        continue-on-error: true
+          mkdir -p logs
+          ./mvnw -B clean package 2>&1 | tee logs/build.log || exit 1
 
       # Push to production branch if build succeeds
       - name: Push to production branch
@@ -48,4 +47,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: maven-build-log
-          path: build.log
+          path: logs/build.log

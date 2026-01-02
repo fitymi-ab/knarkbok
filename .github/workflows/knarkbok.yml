@@ -32,8 +32,12 @@ jobs:
         id: build
         run: |
           mkdir -p logs
-          # Run Maven, capture output to logs/build.log
-          ./mvnw -B clean package 2>&1 | tee logs/build.log || exit 1
+          ./mvnw -B clean package 2>&1 | tee logs/build.log
+          MAVEN_EXIT=${PIPESTATUS[0]}
+          if [ $MAVEN_EXIT -ne 0 ]; then
+            echo "Maven build failed with exit code $MAVEN_EXIT"
+            exit $MAVEN_EXIT
+          fi
 
       # Upload build log if Maven failed
       - name: Upload build log on failure

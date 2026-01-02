@@ -47,18 +47,9 @@ jobs:
           name: maven-build-log
           path: logs/build.log
 
-      # Push to production if build succeeded
       - name: Push to production branch
-        if: success()
+        if: success() && contains(github.ref, 'main')
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Fetch remote production branch or create if it doesn't exist
-          git fetch origin production:production || git checkout -b production
-
-          # Merge main into production (fast-forward only)
-          git merge --ff-only origin/main
-
-          # Push to remote
-          git push origin production
+          git checkout -b production
+          git rebase master
+          git push --force --set-upstream origin production

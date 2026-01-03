@@ -1,4 +1,4 @@
-name: Knarkbok CI/CD
+name: Knarkbok
 
 on:
   push:
@@ -6,20 +6,18 @@ on:
   pull_request:
     branches: [ "main" ]
   schedule:
-    - cron: '42 8 * * *'  # Optional scheduled build
+    - cron: '42 8 * * *'
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout code
       - name: Checkout source
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Needed for pushing branches
 
-      # Set up JDK
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -27,7 +25,6 @@ jobs:
           java-version: '25'
           cache: 'maven'
 
-      # Build with Maven, fail on errors, capture log
       - name: Build with Maven
         id: build
         run: |
@@ -39,7 +36,6 @@ jobs:
             exit $MAVEN_EXIT
           fi
 
-      # Upload build log if Maven failed
       - name: Upload build log on failure
         if: failure()
         uses: actions/upload-artifact@v4
